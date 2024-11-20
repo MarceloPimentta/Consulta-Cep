@@ -14,6 +14,9 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+    max-width: 500px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 h2 {
@@ -54,4 +57,50 @@ button:hover {
 
 #resultado p {
     margin: 5px 0;
+}
+
+/* Media queries para responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    input, button {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px;
+    }
+
+    #resultado {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    input, button {
+        font-size: 14px;
+    }
+
+    button {
+        padding: 8px;
+    }
+
+    #resultado {
+        font-size: 14px;
+    }
 }
