@@ -23,6 +23,34 @@ h2 {
     color: #333;
 }
 
+h3 {
+    margin-top: 20px;
+    color: #333;
+}
+
+#cep-inicial, #cep-final {
+    margin-bottom: 10px;
+    padding: 10px;
+    width: calc(100% - 22px);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button[onclick="buscarCepLote()"] {
+    margin-top: 10px;
+    padding: 10px 20px;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[onclick="buscarCepLote()"]:hover {
+    background-color: #218838;
+}
+
 label {
     display: block;
     margin: 10px 0 5px;

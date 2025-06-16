@@ -1,35 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Consulta de CEP</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
-<body>
-    <div class="container">
-        <h2>Consulta de CEP</h2>
-        <label for="cep">Digite o CEP:</label>
-        <input type="text" id="cep" placeholder="Ex: 01001000">
-        <button onclick="buscarCep()">Buscar</button>
+function buscarCep() {
+            var cep = document.getElementById('cep').value;
+            var url = `https://viacep.com.br/ws/${cep}/json/`;
 
-        <hr>
-
-        <h3>Consulta em lote</h3>
-        <label for="cep-inicial">CEP Inicial:</label>
-        <input type="text" id="cep-inicial" placeholder="Ex: 01001000">
-        <label for="cep-final">CEP Final:</label>
-        <input type="text" id="cep-final" placeholder="Ex: 01002000">
-        <button onclick="buscarCepLote()">Buscar em lote e exportar Excel</button>
-
-        <div id="resultado">
-            <p>CEP: <span id="cep-resultado"></span></p>
-            <p>Logradouro: <span id="logradouro"></span></p>
-            <p>Bairro: <span id="bairro"></span></p>
-            <p>Cidade: <span id="cidade"></span></p>
-            <p>UF: <span id="uf"></span></p>
-        </div>
-    </div>
-
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('cep-resultado').innerText = data.cep;
+                        document.getElementById('logradouro').innerText = data.logradouro;
+                        document.getElementById('bairro').innerText = data.bairro;
+                        document.getElementById('cidade').innerText = data.localidade;
+                        document.getElementById('uf').innerText = data.uf;
+                    } else {
+                        alert('CEP não encontrado!');
+                    }
+                })
+                .catch(error => {
+                    alert('Erro ao consultar o CEP!');
+                    console.error(error);
+                });
+        }
+=======
     <script>
         function buscarCep() {
             var cep = document.getElementById('cep').value;
@@ -112,6 +103,3 @@
             XLSX.utils.book_append_sheet(workbook, worksheet, "CEPs");
             XLSX.writeFile(workbook, "consulta_cep_lote.xlsx");
         }
-    </script>
-</body>
-</html>
