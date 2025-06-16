@@ -21,6 +21,8 @@
         <input type="text" id="cep-final" placeholder="Ex: 01002000">
         <button onclick="buscarCepLote()">Buscar em lote e exportar Excel</button>
 
+        <div id="status-lote" style="text-align:left; max-height: 150px; overflow-y: auto; margin-top: 10px; border: 1px solid #ddd; padding: 10px; font-size: 14px; background: #f9f9f9;"></div>
+
         <div id="resultado">
             <p>CEP: <span id="cep-resultado"></span></p>
             <p>Logradouro: <span id="logradouro"></span></p>
@@ -68,6 +70,9 @@
             const cepInicial = document.getElementById('cep-inicial').value;
             const cepFinal = document.getElementById('cep-final').value;
 
+            const statusDiv = document.getElementById("status-lote");
+            statusDiv.innerHTML = "";
+
             if (!isValidCep(cepInicial) || !isValidCep(cepFinal)) {
                 alert('Por favor, insira CEPs válidos de 8 dígitos.');
                 return;
@@ -94,9 +99,13 @@
                             Cidade: data.localidade,
                             UF: data.uf
                         });
+                        appendStatus(`Consulta CEP ${cepAtual}: OK`);
+                    } else {
+                        appendStatus(`Consulta CEP ${cepAtual}: Não encontrado`);
                     }
                 } catch (error) {
                     console.error(`Erro ao consultar CEP ${cepAtual}:`, error);
+                    appendStatus(`Consulta CEP ${cepAtual}: Erro na consulta`);
                 }
                 cepAtual = incrementarCep(cepAtual);
             }
@@ -111,6 +120,16 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "CEPs");
             XLSX.writeFile(workbook, "consulta_cep_lote.xlsx");
+
+            appendStatus("Exportação concluída: consulta_cep_lote.xlsx");
+        }
+
+        function appendStatus(message) {
+            const statusDiv = document.getElementById("status-lote");
+            const p = document.createElement("p");
+            p.textContent = message;
+            statusDiv.appendChild(p);
+            statusDiv.scrollTop = statusDiv.scrollHeight;
         }
     </script>
 </body>
