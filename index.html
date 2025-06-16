@@ -20,8 +20,11 @@
         <label for="cep-final">CEP Final:</label>
         <input type="text" id="cep-final" placeholder="Ex: 01002000">
         <button onclick="buscarCepLote()">Buscar em lote e exportar Excel</button>
+        <button id="pause-resume-btn" onclick="togglePauseResume()" style="margin-left: 10px;">Pausar</button>
 
         <div id="status-lote" style="text-align:left; max-height: 150px; overflow-y: auto; margin-top: 10px; border: 1px solid #ddd; padding: 10px; font-size: 14px; background: #f9f9f9;"></div>
+
+        <div id="last-consulted" style="margin-top: 10px; font-weight: bold; color: #555;">Último CEP consultado: <span id="last-cep">Nenhum</span></div>
 
         <div id="resultado">
             <p>CEP: <span id="cep-resultado"></span></p>
@@ -130,6 +133,104 @@
             p.textContent = message;
             statusDiv.appendChild(p);
             statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        let isPaused = false;
+        let pauseResolve = null;
+
+        function togglePauseResume() {
+            const btn = document.getElementById("pause-resume-btn");
+            if (isPaused) {
+                isPaused = false;
+                btn.textContent = "Pausar";
+                if (pauseResolve) {
+                    pauseResolve();
+                    pauseResolve = null;
+                }
+            } else {
+                isPaused = true;
+                btn.textContent = "Continuar";
+            }
+        }
+
+        function waitForResume() {
+            return new Promise(resolve => {
+                pauseResolve = resolve;
+            });
+        }
+
+        function updateLastConsultedCep(cep) {
+            document.getElementById("last-cep").innerText = cep;
+            localStorage.setItem("lastConsultedCep", cep);
+        }
+
+        window.onload = function() {
+            const lastCep = localStorage.getItem("lastConsultedCep");
+            if (lastCep) {
+                updateLastConsultedCep(lastCep);
+            }
+        };
+
+        async function buscarCepLote() {
+            const cepInicial = document.getElementById('cep-inicial').value;
+            const cepFinal = document.getElementById('cep-final').value;
+
+            const statusDiv = document.getElementById("status-lote");
+            statusDiv.innerHTML = "";
+
+            if (!isValidCep(cepInicial) || !isValidCep(cepFinal)) {
+                alert('Por favor, insira CEPs válidos de 8 dígitos.');
+                return;
+            }
+
+            if (cepInicial > cepFinal) {
+                alert('CEP inicial deve ser menor ou igual ao CEP final.');
+                return;
+            }
+
+            let cepAtual = cepInicial;
+            const resultados = [];
+
+            while (cepAtual <= cepFinal) {
+                if (isPaused) {
+                    await waitForResume();
+                }
+                const url = `https://viacep.com.br/ws/${cepAtual}/json/`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (!data.erro) {
+                        resultados.push({
+                            CEP: data.cep,
+                            Logradouro: data.logradouro,
+                            Bairro: data.bairro,
+                            Cidade: data.localidade,
+                            UF: data.uf
+                        });
+                        appendStatus(`Consulta CEP ${cepAtual}: OK`);
+                    } else {
+                        appendStatus(`Consulta CEP ${cepAtual}: Não encontrado`);
+                    }
+                } catch (error) {
+                    console.error(`Erro ao consultar CEP ${cepAtual}:`, error);
+                    appendStatus(`Consulta CEP ${cepAtual}: Erro na consulta`);
+                }
+                updateLastConsultedCep(cepAtual);
+                cepAtual = incrementarCep(cepAtual);
+            }
+
+            if (resultados.length === 0) {
+                alert('Nenhum CEP válido encontrado no intervalo informado.');
+                return;
+            }
+
+            // Criar planilha Excel
+            const worksheet = XLSX.utils.json_to_sheet(resultados);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "CEPs");
+            XLSX.writeFile(workbook, "consulta_cep_lote.xlsx");
+
+            appendStatus("Exportação concluída: consulta_cep_lote.xlsx");
         }
     </script>
 </body>
